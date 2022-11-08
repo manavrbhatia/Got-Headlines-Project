@@ -26,7 +26,7 @@ def compute_metrics(pred):
     result = {key: value.mid.fmeasure * 100 for key, value in result.items()}
     return {k: round(v, 4) for k, v in result.items()}
 
-def generic_TD5_model(tokenized_datasets, data_collator, model, tokenizer, evaluator):
+def generic_TD5_model(tokenized_datasets, data_collator, model, tokenizer):
 
     logging_steps = len(tokenized_datasets["train"]) // BATCH_SIZE
 
