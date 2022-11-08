@@ -52,3 +52,13 @@ coverage.xml
 docs/_build/
 
 **/.DS_Store
+
+# Environments
+.env
+.venv
+env/
+newsenv/
+venv/
+ENV/
+env.bak/
+venv.bak/
