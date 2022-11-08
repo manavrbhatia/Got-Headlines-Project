@@ -27,7 +27,7 @@ def generic_TD5_model(tokenized_datasets, data_collator, model, tokenizer):
         model,
         args,
         train_dataset=tokenized_datasets["train"],
-        eval_dataset=tokenized_datasets["validation"],
+        eval_dataset=tokenized_datasets["valid"],
         data_collator=data_collator,
         tokenizer=tokenizer,
     )
