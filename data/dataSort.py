@@ -3,9 +3,9 @@ import sys
 
 csv.field_size_limit(sys.maxsize)
 
-INPUT_FILE = 'all-years-cnn.csv'
-OUTPUT_FILE = '2016-cnn.csv'
-PUBLICATION = 'CNN'
+INPUT_FILE = 'all-the-news-2-1.csv'
+OUTPUT_FILE = 'generic-dataset.csv'
+PUBLICATION = ["CNN", "Reuters", "The New York Times"]
 BEGIN_YEAR = 2016
 END_YEAR = 2016
 
@@ -17,7 +17,7 @@ def read():
 	    line_count = 0
 	    for row in csv_reader:
 	        if line_count != 0:
-	        	if row["publication"] == PUBLICATION and int(row["year"]) >= BEGIN_YEAR and int(row["year"]) <= END_YEAR:
+	        	if row["publication"] in PUBLICATION and int(row["year"]) >= BEGIN_YEAR and int(row["year"]) <= END_YEAR:
 	        		csv_dict.append(row)
 	        line_count += 1
 	    return csv_dict
