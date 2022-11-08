@@ -51,6 +51,7 @@ def main():
         tokenizer=tokenizer)
     
     trainer.train()
+    trainer.evaluate()
     
 
 

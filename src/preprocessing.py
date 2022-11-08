@@ -38,6 +38,6 @@ def tokenize_dataset(dataset, tokenizer, test_split=0.2):
         return model_inputs
 
     tokenized_datasets = original_datasets.map(preprocess_dataset,
-     batched=True,)
+     batched=True,batch_size=500)
 
     return tokenized_datasets
