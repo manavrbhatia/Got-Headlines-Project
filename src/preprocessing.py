@@ -14,9 +14,7 @@ def tokenize_dataset(dataset, tokenizer, experiment_name, test_split=0.2):
     if os.path.exists("../data/tokenized-"+experiment_name):
         print("Tokenized dataset found")
         return load_from_disk("../data/tokenized-"+experiment_name)
-    else:
-        dataSort.select_dataset("../data/generic-dataset.csv")
-        print("Wrote generic dataset to file")
+
     train_test_data =  dataset.train_test_split(test_split)
     test_valid_data = train_test_data["test"].train_test_split(0.5)
 
@@ -34,6 +32,8 @@ def tokenize_dataset(dataset, tokenizer, experiment_name, test_split=0.2):
             max_length=MAX_ARTICLE_LEN,
             truncation=True,
         )
+
+        print(examples["article"][0])
 
         labels = tokenizer(
             [str(x) for x in examples["title"]],

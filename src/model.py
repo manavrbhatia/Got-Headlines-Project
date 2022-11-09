@@ -4,8 +4,7 @@ from preprocessing import tokenize_dataset
 import numpy as np
 import evaluate
 
-
-def compute_metrics(pred):
+def compute_metrics(tokenizer,pred):
     rouge_score = evaluate.load("rouge")
     predictions, labels = pred
     # Decode generated summaries into text
@@ -31,6 +30,8 @@ def compute_metrics(pred):
 def generic_TD5_model(tokenized_datasets, data_collator, model, tokenizer):
 
     logging_steps = len(tokenized_datasets["train"]) // BATCH_SIZE
+
+    tokenize_compute = lambda x : compute_metrics(x, tokenizer)
 
     args = Seq2SeqTrainingArguments(
         output_dir=f"results/generic-results",
@@ -59,7 +60,7 @@ def generic_TD5_model(tokenized_datasets, data_collator, model, tokenizer):
         eval_dataset=tokenized_datasets["valid"],
         data_collator=data_collator,
         tokenizer=tokenizer,
-        compute_metrics=compute_metrics,
+        compute_metrics=tokenize_compute,
     )
 
     return trainer
