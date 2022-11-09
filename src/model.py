@@ -11,6 +11,8 @@ def compute_metrics(pred):
     # Decode generated summaries into text
     decoded_preds = tokenizer.batch_decode(predictions, skip_special_tokens=True)
 
+    labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
+
     # Decode reference summaries into text
     decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
 
@@ -40,7 +42,10 @@ def generic_TD5_model(tokenized_datasets, data_collator, model, tokenizer):
         save_total_limit=3,
         num_train_epochs=NUM_EPOCHS,
         predict_with_generate=True,
-        logging_steps=logging_steps
+        logging_strategy="epoch",
+        save_strategy="epoch",
+        fp16=True,
+        gradient_accumulation_steps=4,
     )
 
     tokenized_datasets = tokenized_datasets.remove_columns(

@@ -3,12 +3,20 @@ MAX_ARTICLE_LEN = 512
 # Check distribution of lengths``
 MAX_TITLE_LEN = 100
 
-from datasets import DatasetDict
+from datasets import DatasetDict, load_from_disk
+import os
 
-def tokenize_dataset(dataset, tokenizer, test_split=0.2):
+def tokenize_dataset(dataset, tokenizer, experiment_name, test_split=0.2):
     '''
     Take an untokenized, unsplit dataset, split it into 3
     '''
+
+    if os.path.exists("../data/tokenized-"+experiment_name):
+        print("Tokenized dataset found")
+        return load_from_disk("../data/tokenized-"+experiment_name)
+    else:
+        dataSort.select_dataset("../data/generic-dataset.csv")
+        print("Wrote generic dataset to file")
     train_test_data =  dataset.train_test_split(test_split)
     test_valid_data = train_test_data["test"].train_test_split(0.5)
 
@@ -28,7 +36,7 @@ def tokenize_dataset(dataset, tokenizer, test_split=0.2):
         )
 
         labels = tokenizer(
-            [str(x) for x in examples["title"]], 
+            [str(x) for x in examples["title"]],
             max_length=MAX_TITLE_LEN,
             truncation=True,
         )
@@ -39,5 +47,6 @@ def tokenize_dataset(dataset, tokenizer, test_split=0.2):
 
     tokenized_datasets = original_datasets.map(preprocess_dataset,
      batched=True,)
+    tokenized_datasets.save_to_disk("../data/tokenized-"+experiment_name)
 
     return tokenized_datasets

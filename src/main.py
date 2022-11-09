@@ -12,7 +12,6 @@ from model import generic_TD5_model
 def main():
     parser = argparse.ArgumentParser(description="Automatic News Title Generation")
     parser.add_argument('exp_name', type=str, default="generic")
-    parser.add_argument('--exp_name', type=str, default="generic")
     arguments = parser.parse_args()
 
     exp_name = arguments.exp_name
@@ -25,14 +24,14 @@ def main():
         else:
             dataSort.select_dataset("../data/generic-dataset.csv")
             print("Wrote generic dataset to file")
-    
+
         dataset = load_dataset(
-            "csv", 
+            "csv",
             data_files="../data/generic-dataset.csv",
         )
         model_name = "google/mt5-small"
 
-    
+
 
     tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
     print("Loaded Tokenizer.")
@@ -40,20 +39,19 @@ def main():
     model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
     print("Loaded Model.")
 
-    split_tokenized_dataset = tokenize_dataset(dataset["train"], tokenizer)
+    split_tokenized_dataset = tokenize_dataset(dataset["train"], tokenizer, exp_name)
     data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
 
     trainer = None
-    if exp_name == "generic": 
-        trainer = generic_TD5_model(split_tokenized_dataset, 
+    if exp_name == "generic":
+        trainer = generic_TD5_model(split_tokenized_dataset,
         data_collator,
         model=model,
         tokenizer=tokenizer)
-    
+
     trainer.train()
     trainer.evaluate()
-    
-
+    print("Finished Execution")
 
 if __name__ == "__main__":
     main()
