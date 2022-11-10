@@ -3,6 +3,7 @@ from constants import BATCH_SIZE, NUM_EPOCHS
 from preprocessing import tokenize_dataset
 import numpy as np
 import evaluate
+import wandb
 
 def compute_metrics(tokenizer,pred):
     rouge_score = evaluate.load("rouge")
@@ -33,6 +34,8 @@ def generic_TD5_model(tokenized_datasets, data_collator, model, tokenizer):
 
     tokenize_compute = lambda x : compute_metrics(x, tokenizer)
 
+    # Source for the deepspeed config template is https://www.kaggle.com/code/tanulsingh077/longformer-training-with-deepspeed-and-hf-trainer/notebook
+
     args = Seq2SeqTrainingArguments(
         output_dir=f"results/generic-results",
         evaluation_strategy="epoch",
@@ -43,10 +46,15 @@ def generic_TD5_model(tokenized_datasets, data_collator, model, tokenizer):
         save_total_limit=3,
         num_train_epochs=NUM_EPOCHS,
         predict_with_generate=True,
-        logging_strategy="epoch",
+        logging_strategy="steps",
+        logging_first_step=True,
+        logging_steps=logging_steps,
         save_strategy="epoch",
-        fp16=True,
+        bf16=True,
         gradient_accumulation_steps=4,
+        #optim='adamw_torch',
+        deepspeed="ds_config.json",
+        report_to="wandb",
     )
 
     tokenized_datasets = tokenized_datasets.remove_columns(

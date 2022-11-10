@@ -8,13 +8,30 @@ from preprocessing import tokenize_dataset
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, DataCollatorForSeq2Seq
 
 from model import generic_TD5_model
+import torch
+import wandb
+
 
 def main():
+
+    # Testing this remove later
+
     parser = argparse.ArgumentParser(description="Automatic News Title Generation")
     parser.add_argument('exp_name', type=str, default="generic")
+    #Remove if not dist
+    parser.add_argument("--local_rank", type=int)
+
     arguments = parser.parse_args()
 
     exp_name = arguments.exp_name
+    #Remove if not dist
+    local_rank = arguments.local_rank
+
+    if local_rank and local_rank == 0:
+        wandb.init(project="EECS595 Final Project", entity="salamentic", group="Experiment"+exp_name)
+    else:
+        wandb.init(project="EECS595 Final Project", entity="salamentic")
+
     dataset = None
     model_name = ""
 
