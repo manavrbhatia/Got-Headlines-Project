@@ -41,7 +41,7 @@ def write(csv_dict, out_file : str):
 	    writer.writeheader()
 	    for row in csv_dict:
 	    	writer.writerow({'year': row["year"], 'title': row["title"], 'article': row["article"], 'publication': row["publication"]})
-	 
+
 
 def select_dataset(out_file : str, begin_year=2016, end_year=2016, publications=["CNN", "Reuters", "The New York Times"]):
 	"""

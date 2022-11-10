@@ -3,9 +3,8 @@ from constants import BATCH_SIZE, NUM_EPOCHS
 from preprocessing import tokenize_dataset
 import numpy as np
 import evaluate
-import wandb
 
-def compute_metrics(tokenizer,pred):
+def compute_metrics(pred,tokenizer):
     rouge_score = evaluate.load("rouge")
     predictions, labels = pred
     # Decode generated summaries into text
@@ -19,13 +18,14 @@ def compute_metrics(tokenizer,pred):
     # ROUGE expects a newline after each sentence
     decoded_preds = ["\n".join(sent_tokenize(pred.strip())) for pred in decoded_preds]
     decoded_labels = ["\n".join(sent_tokenize(label.strip())) for label in decoded_labels]
+
     # Compute ROUGE scores
     result = rouge_score.compute(
         predictions=decoded_preds, references=decoded_labels, use_stemmer=True
     )
 
     # Extract the median scores
-    result = {key: value.mid.fmeasure * 100 for key, value in result.items()}
+    result = {key: value*100 for key, value in result.items()}
     return {k: round(v, 4) for k, v in result.items()}
 
 def generic_TD5_model(tokenized_datasets, data_collator, model, tokenizer):
@@ -43,7 +43,7 @@ def generic_TD5_model(tokenized_datasets, data_collator, model, tokenizer):
         per_device_train_batch_size=BATCH_SIZE,
         per_device_eval_batch_size=BATCH_SIZE,
         weight_decay=0.01,
-        save_total_limit=3,
+        save_total_limit=1,
         num_train_epochs=NUM_EPOCHS,
         predict_with_generate=True,
         logging_strategy="steps",

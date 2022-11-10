@@ -2,6 +2,7 @@ import argparse
 import dataSort
 import os
 from constants import INPUT_FILE
+import wandb
 
 from datasets import load_dataset
 from preprocessing import tokenize_dataset
@@ -24,13 +25,13 @@ def main():
     arguments = parser.parse_args()
 
     exp_name = arguments.exp_name
-    #Remove if not dist
-    local_rank = arguments.local_rank
 
+    local_rank = arguments.local_rank
     if local_rank and local_rank == 0:
-        wandb.init(project="EECS595 Final Project", entity="salamentic", group="Experiment"+exp_name)
+        wandb.init(project="EECS595 Final Project", entity="salamentic", group="Experiment: "+exp_name)
     else:
         wandb.init(project="EECS595 Final Project", entity="salamentic")
+
 
     dataset = None
     model_name = ""
@@ -48,6 +49,18 @@ def main():
         )
         model_name = "google/mt5-small"
 
+    if exp_name == "generic_allyears":
+        if os.path.exists("../data/generic-all-dataset.csv"):
+            print("Dataset already found, skipping write.")
+        else:
+            dataSort.select_dataset("../data/generic-all-dataset.csv", start_year=2016, end_year=2020)
+            print("Wrote generic dataset to file")
+
+        dataset = load_dataset(
+            "csv",
+            data_files="../data/generic-all-dataset.csv",
+        )
+        model_name = "google/mt5-small"
 
 
     tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
@@ -60,7 +73,7 @@ def main():
     data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
 
     trainer = None
-    if exp_name == "generic":
+    if exp_name == "generic" or exp_name == "generic_allyears":
         trainer = generic_TD5_model(split_tokenized_dataset,
         data_collator,
         model=model,

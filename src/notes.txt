@@ -1,0 +1,5 @@
+install deepspeed
+install transformers[deepspeed]
+
+install wandb
+login on login machine itself
