@@ -29,7 +29,7 @@ def main():
     local_rank = arguments.local_rank
     if local_rank and local_rank == 0:
         wandb.init(project="EECS595 Final Project", entity="salamentic", group="Experiment: "+exp_name)
-    else:
+    elif not local_rank:
         wandb.init(project="EECS595 Final Project", entity="salamentic")
 
 
@@ -53,7 +53,7 @@ def main():
         if os.path.exists("../data/generic-all-dataset.csv"):
             print("Dataset already found, skipping write.")
         else:
-            dataSort.select_dataset("../data/generic-all-dataset.csv", start_year=2016, end_year=2020)
+            dataSort.select_dataset("../data/generic-all-dataset.csv", begin_year=2016, end_year=2020)
             print("Wrote generic dataset to file")
 
         dataset = load_dataset(

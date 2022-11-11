@@ -4,6 +4,8 @@ from preprocessing import tokenize_dataset
 import numpy as np
 import evaluate
 
+from nltk import sent_tokenize
+
 def compute_metrics(pred,tokenizer):
     rouge_score = evaluate.load("rouge")
     predictions, labels = pred
@@ -51,7 +53,7 @@ def generic_TD5_model(tokenized_datasets, data_collator, model, tokenizer):
         logging_steps=logging_steps,
         save_strategy="epoch",
         bf16=True,
-        gradient_accumulation_steps=4,
+        gradient_accumulation_steps=2,
         #optim='adamw_torch',
         deepspeed="ds_config.json",
         report_to="wandb",
