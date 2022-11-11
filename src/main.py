@@ -27,10 +27,7 @@ def main():
     exp_name = arguments.exp_name
 
     local_rank = arguments.local_rank
-    if local_rank and local_rank == 0:
-        wandb.init(project="EECS595 Final Project", entity="salamentic", group="Experiment: "+exp_name)
-    elif not local_rank:
-        wandb.init(project="EECS595 Final Project", entity="salamentic")
+    wandb.init(project="EECS595 Final Project", entity="salamentic", group="Experiment: "+exp_name)
 
 
     dataset = None

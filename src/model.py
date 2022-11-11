@@ -53,7 +53,7 @@ def generic_TD5_model(tokenized_datasets, data_collator, model, tokenizer):
         logging_steps=logging_steps,
         save_strategy="epoch",
         bf16=True,
-        gradient_accumulation_steps=2,
+        gradient_accumulation_steps=4,
         #optim='adamw_torch',
         deepspeed="ds_config.json",
         report_to="wandb",
