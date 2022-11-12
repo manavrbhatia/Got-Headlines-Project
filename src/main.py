@@ -1,5 +1,6 @@
 import argparse
 import dataSort
+import smallPubDataSort
 import os
 from constants import INPUT_FILE
 import wandb
@@ -21,10 +22,13 @@ def main():
     parser.add_argument('exp_name', type=str, default="generic")
     #Remove if not dist
     parser.add_argument("--local_rank", type=int)
+    parser.add_argument("--publication", type=str)
 
     arguments = parser.parse_args()
 
     exp_name = arguments.exp_name
+    
+    publication = arguments.publication
 
     local_rank = arguments.local_rank
     wandb.init(project="EECS595 Final Project", entity="salamentic", group="Experiment: "+exp_name)
@@ -59,7 +63,19 @@ def main():
         )
         model_name = "google/mt5-small"
 
+    if exp_name == "smallPub":
+        if os.path.exists("../data/"+publication+".csv"):
+            print("Dataset already found, skipping write.")
+        else:
+            smallPubDataSort.generate()
+            print("Wrote generic dataset to file")
 
+        dataset = load_dataset(
+            "csv",
+            data_files="../data/"+publication+".csv",
+        )
+        model_name = "google/mt5-small"
+        
     tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
     print("Loaded Tokenizer.")
 
@@ -74,8 +90,7 @@ def main():
         trainer = generic_TD5_model(split_tokenized_dataset,
         data_collator,
         model=model,
-        tokenizer=tokenizer,
-        exp_name=exp_name)
+        tokenizer=tokenizer)
 
     trainer.train()
     trainer.evaluate()
