@@ -74,7 +74,8 @@ def main():
         trainer = generic_TD5_model(split_tokenized_dataset,
         data_collator,
         model=model,
-        tokenizer=tokenizer)
+        tokenizer=tokenizer,
+        exp_name=exp_name)
 
     trainer.train()
     trainer.evaluate()

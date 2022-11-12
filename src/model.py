@@ -30,7 +30,7 @@ def compute_metrics(pred,tokenizer):
     result = {key: value*100 for key, value in result.items()}
     return {k: round(v, 4) for k, v in result.items()}
 
-def generic_TD5_model(tokenized_datasets, data_collator, model, tokenizer):
+def generic_TD5_model(tokenized_datasets, data_collator, model, tokenizer, exp_name):
 
     logging_steps = len(tokenized_datasets["train"]) // BATCH_SIZE
 
@@ -39,7 +39,7 @@ def generic_TD5_model(tokenized_datasets, data_collator, model, tokenizer):
     # Source for the deepspeed config template is https://www.kaggle.com/code/tanulsingh077/longformer-training-with-deepspeed-and-hf-trainer/notebook
 
     args = Seq2SeqTrainingArguments(
-        output_dir=f"results/generic-results",
+        output_dir=f"results/generic-results"+exp_name,
         evaluation_strategy="epoch",
         learning_rate=5.6e-5,
         per_device_train_batch_size=BATCH_SIZE,
