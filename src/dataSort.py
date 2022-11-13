@@ -43,7 +43,7 @@ def write(csv_dict, out_file : str):
 	    	writer.writerow({'year': row["year"], 'title': row["title"], 'article': row["article"], 'publication': row["publication"]})
 
 
-def select_dataset(out_file : str, begin_year=2016, end_year=2016, publications=["CNN", "Reuters", "The New York Times"]):
+def select_dataset(out_file : str, begin_year=2016, end_year=2020, publications=["CNN", "Reuters", "The New York Times"]):
 	"""
 	Specify labels you want to extract from All The News 2.0 and output a new CSV using those
 
@@ -54,5 +54,5 @@ def select_dataset(out_file : str, begin_year=2016, end_year=2016, publications=
 	publications (List(str)): List of publications you want to include
 	"""
 
-	dict = read()
-	write(dict, out_file)
+	temp_dict = read(begin_year, end_year, publications)
+	write(temp_dict, out_file)
