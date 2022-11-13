@@ -1,7 +1,8 @@
 import argparse
 
 from datasets import load_dataset
-from preprocessing import tokenize_dataset
+from preprocessing import tokenize_dataset_fewshot
+from model import get_trainer_fewshot
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, DataCollatorForSeq2Seq
 import torch
 
