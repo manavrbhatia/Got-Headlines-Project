@@ -30,9 +30,9 @@ def compute_metrics(pred,tokenizer):
     result = {key: value*100 for key, value in result.items()}
     return {k: round(v, 4) for k, v in result.items()}
 
-def get_trainer_ally(tokenized_datasets, data_collator, model, tokenizer, exp_name):
+def get_trainer_ally(tokenized_datasets, data_collator, model, tokenizer, exp_name, rank):
 
-    logging_steps = len(tokenized_datasets["train"]) // (4*BATCH_SIZE*2)
+    logging_steps = len(tokenized_datasets["train"]) // (4*BATCH_SIZE*4)
 
     tokenize_compute = lambda x : compute_metrics(x, tokenizer)
 
@@ -40,23 +40,29 @@ def get_trainer_ally(tokenized_datasets, data_collator, model, tokenizer, exp_na
 
     print("results/"+exp_name)
     args = Seq2SeqTrainingArguments(
-        output_dir=f"results/"+exp_name,
-        evaluation_strategy="epoch",
-        learning_rate=5.6e-5,
+        seed=42,
+        output_dir=f"/scratch/eecs595f22_class_root/eecs595f22_class/anrao/results/"+exp_name,
+        evaluation_strategy='epoch',
+        learning_rate=8e-4,
         per_device_train_batch_size=BATCH_SIZE,
-        per_device_eval_batch_size=BATCH_SIZE,
+        per_device_eval_batch_size=int(BATCH_SIZE/2),
         weight_decay=0.01,
         save_total_limit=1,
         num_train_epochs=NUM_EPOCHS,
         predict_with_generate=True,
-        logging_strategy="steps",
+        logging_strategy="epoch",
         logging_first_step=True,
-        logging_steps=logging_steps,
         save_strategy="epoch",
         bf16=True,
+        # Maybe change this back, idk if works
+        bf16_full_eval=True,
+        optim='adafactor',
         gradient_accumulation_steps=4,
+        eval_accumulation_steps=4,
         #optim='adamw_torch',
         deepspeed="ds_config.json",
+        generation_max_length=100,
+        local_rank=rank,
         report_to="wandb",
     )
 
@@ -85,20 +91,19 @@ def get_trainer_fewshot(tokenized_datasets, data_collator, model, tokenizer, pub
 
     # Source for the deepspeed config template is https://www.kaggle.com/code/tanulsingh077/longformer-training-with-deepspeed-and-hf-trainer/notebook
 
-    print("results/"+pub_name)
     args = Seq2SeqTrainingArguments(
-        output_dir=f"results/"+pub_name,
-        evaluation_strategy="epoch",
-        learning_rate=7e-5,
+        output_dir=f"fewshot_results/generic_ally/generic_ally_"+pub_name,
+        evaluation_strategy="no",
+        learning_rate=1e-6,
         per_device_train_batch_size=8,
-        per_device_eval_batch_size=32,
-        weight_decay=0.01,
-        save_total_limit=1,
-        num_train_epochs=1,
+        per_device_eval_batch_size=8,
+        save_total_limit=0,
+        num_train_epochs=10,
         predict_with_generate=True,
-        logging_strategy="steps",
-        save_strategy="epoch",
-        bf16=True,
+        logging_strategy="no",
+        save_strategy="no",
+        fp16=True,
+        lr_scheduler_type='constant',
     )
 
     tokenized_datasets = tokenized_datasets.remove_columns(
@@ -108,8 +113,8 @@ def get_trainer_fewshot(tokenized_datasets, data_collator, model, tokenizer, pub
     trainer = Seq2SeqTrainer(
         model,
         args,
-        train_dataset=tokenized_datasets["train"].select(range(100)),
-        eval_dataset=tokenized_datasets["valid"],
+        train_dataset=tokenized_datasets["train"].select(range(50)),
+        eval_dataset=tokenized_datasets["test"],
         data_collator=data_collator,
         tokenizer=tokenizer,
         compute_metrics=tokenize_compute,

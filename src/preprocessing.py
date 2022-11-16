@@ -33,8 +33,6 @@ def tokenize_dataset(dataset, tokenizer, experiment_name, test_split=0.2):
             truncation=True,
         )
 
-        print(examples["article"][0])
-
         labels = tokenizer(
             [str(x) for x in examples["title"]],
             max_length=MAX_TITLE_LEN,
@@ -57,9 +55,9 @@ def tokenize_dataset_fewshot(dataset, tokenizer, pub_name, test_split=0.9):
     Take an untokenized, unsplit dataset, split it into 3
     '''
 
-    if os.path.exists("../data/tokenized-fewshot-"+pub_name):
+    if os.path.exists("../data/tokenized-pubs/tokenized-fewshot-"+pub_name):
         print("Tokenized dataset found")
-        return load_from_disk("../data/tokenized-fewshot-"+pub_name)
+        return load_from_disk("../data/tokenized-pubs/tokenized-fewshot-"+pub_name)
 
     train_test_data =  dataset.train_test_split(test_split)
 
@@ -85,6 +83,6 @@ def tokenize_dataset_fewshot(dataset, tokenizer, pub_name, test_split=0.9):
 
     tokenized_datasets = train_test_data.map(preprocess_dataset,
      batched=True)
-    tokenized_datasets.save_to_disk("../data/tokenized-fewshot-"+pub_name)
+    tokenized_datasets.save_to_disk("../data/tokenized-pubs/tokenized-fewshot-"+pub_name)
 
     return tokenized_datasets

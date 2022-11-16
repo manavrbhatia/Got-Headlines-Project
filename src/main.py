@@ -5,7 +5,7 @@ import os
 from constants import INPUT_FILE
 import wandb
 
-from datasets import load_dataset
+from datasets import load_dataset, load_from_disk
 from preprocessing import tokenize_dataset
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, DataCollatorForSeq2Seq
 
@@ -37,82 +37,66 @@ def main():
     dataset = None
     model_name = ""
     tokenizer = None
-
-    if exp_name == "generic":
-        if os.path.exists("../data/generic-dataset.csv"):
-            print("Dataset already found, skipping write.")
-        else:
-            dataSort.select_dataset("../data/generic-dataset.csv")
-            print("Wrote generic dataset to file")
-
-        dataset = load_dataset(
-            "csv",
-            data_files="../data/generic-dataset.csv",
-        )
-        model_name = "google/mt5-small"
+    split_tokenized_dataset = None
 
     if exp_name == "generic_allyears":
-        if os.path.exists("../data/generic-all-dataset.csv"):
-            print("Dataset already found, skipping write.")
-        else:
-            dataSort.select_dataset("../data/generic-all-dataset.csv", begin_year=2016, end_year=2020)
-            print("Wrote generic dataset to file")
-
-        dataset = load_dataset(
-            "csv",
-            data_files="../data/generic-all-dataset.csv",
-        )
         model_name = "google/mt5-small"
-
-    if exp_name == "smallPub":
-        if os.path.exists("../data/"+publication+".csv"):
-            print("Dataset already found, skipping write.")
-        else:
-            smallPubDataSort.generate()
-            print("Wrote generic dataset to file")
-
-        dataset = load_dataset(
-            "csv",
-            data_files="../data/"+publication+".csv",
-        )
-        model_name = "google/mt5-small"
-
-    if exp_name == "pegx_ally":
-        if os.path.exists("../data/generic-all-dataset.csv"):
-            print("Dataset already found, skipping write.")
-        else:
-            dataSort.select_dataset("../data/generic-all-dataset.csv", begin_year=2016, end_year=2020)
-            print("Wrote generic dataset to file")
-
-        dataset = load_dataset(
-            "csv",
-            data_files="../data/generic-all-dataset.csv",
-        )
+    elif exp_name == "pegx_ally":
         model_name = "google/pegasus-x-base"
+    else:
+        print("Experiment TBD")
+        return
 
     if exp_name == "pegx_ally":
-        tokenizer = AutoTokenizer.from_pretrained(model_name, max_length=4096, return_tensors='pt')
+        tokenizer = AutoTokenizer.from_pretrained(model_name, max_length=1024, return_tensors='pt')
         print("Loaded Pegasus X Tokenizer")
     else:
         tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
         print("Loaded Tokenizer.")
 
+    if not os.path.exists("../data/tokenized-"+exp_name):
+        if exp_name == "generic_allyears":
+            if os.path.exists("../data/generic-all-dataset.csv"):
+                print("Dataset already found, skipping write.")
+            else:
+                dataSort.select_dataset("../data/generic-all-dataset.csv", begin_year=2016, end_year=2020)
+                print("Wrote generic dataset to file")
+
+            dataset = load_dataset(
+                "csv",
+                data_files="../data/generic-all-dataset.csv")
+        if exp_name == "pegx_ally":
+            if os.path.exists("../data/generic-all-dataset.csv"):
+                print("Dataset already found, skipping write.")
+            else:
+                dataSort.select_dataset("../data/generic-all-dataset.csv", begin_year=2016, end_year=2020)
+                print("Wrote generic dataset to file")
+
+            dataset = load_dataset(
+                "csv",
+                data_files="../data/generic-all-dataset.csv")
+
+        split_tokenized_dataset = tokenize_dataset(dataset["train"], tokenizer, exp_name)
+        print("Wrote Tokenized datasets")
+    elif os.path.exists("../data/tokenized-"+exp_name):
+        print("Tokenized dataset found")
+        split_tokenized_dataset = load_from_disk("../data/tokenized-"+exp_name)
+
     model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
     print("Loaded Model.")
 
-    split_tokenized_dataset = tokenize_dataset(dataset["train"], tokenizer, exp_name)
     data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
 
-    trainer = None
-    if exp_name == "generic" or exp_name == "generic_allyears" or exp_name == "pegx_ally":
-        trainer = get_trainer_ally(split_tokenized_dataset,
-        data_collator,
-        model=model,
-        tokenizer=tokenizer,
-        exp_name=exp_name)
-
+    trainer = get_trainer_ally(split_tokenized_dataset,
+    data_collator,
+    model=model,
+    tokenizer=tokenizer,
+    exp_name=exp_name,
+    rank=local_rank,
+    )
     trainer.train()
     trainer.evaluate()
+
     print("Finished Execution")
 
 if __name__ == "__main__":
